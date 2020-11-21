@@ -7,14 +7,41 @@ from definitions import IMAGES_DIR
 
 def run_linux_commands():
 
+    system_type_command = 'gsettings list-schemas'
 
+    out = subprocess.run(system_type_command.split(" "), stdout=subprocess.PIPE)
 
-    system_type_command = 'gsettings list-schemas | grep "desktop.background"'
+    out = out.stdout.decode('utf-8')
 
-    out = system(system_type_command)
-    print(type(out))
+    system_type = "na"
+    for line in out.splitlines():
+        if "desktop.background" in line:
+            system_type = line.replace("org.", "").replace(".desktop.background", "").lower()
+            break
 
-    y = 'gsettings set org.gnome.desktop.background picture-uri "/home/andreaalf/Documents/Other/automatic-wallpaper-changer/images/0.png"'
+    available_envs = ["gnome", "cinnamon"]
+
+    if system_type == "na":
+        raise Exception("Could not retrieve desktop environment name. Compatible envs: " + "/".join(available_envs))
+
+    if system_type not in available_envs:
+        raise Exception(
+            "Unknown desktop environment '{}'. Compatible envs: ".format(system_type) + "/".join(available_envs)
+        )
+
+    set_background_command = 'gsettings set org.' + system_type + '.desktop.background picture-uri FILENAME'
+
+    set_background_command = set_background_command.replace(
+        "FILENAME",
+        "/home/andreaalf/Documents/Other/automatic-wallpaper-changer/images/1.png"
+    )
+
+    valid = system(set_background_command)
+
+    if valid != 0:
+        raise Exception("Error while executing command '{}'".format(set_background_command))
+
+    print("VALID:", valid)
 
 
 def get_html_summaries(rss: FeedParserDict) -> list:

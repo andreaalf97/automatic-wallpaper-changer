@@ -13,7 +13,7 @@ rss = fp.parse(url)
 
 # entries_statistics(entries)
 
-img_links = get_img_links(rss, exclude_galleries=True)
+# img_links = get_img_links(rss, exclude_galleries=True)
 # print("\n".join(img_links))
 
 # url_to_images(img_links, clear_directory=True)
