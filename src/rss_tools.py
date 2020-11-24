@@ -5,14 +5,23 @@ import subprocess
 from definitions import IMAGES_DIR
 
 
-def run_linux_commands():
+def set_wallpaper(wallpaper_path: str) -> int:
+    """
+    This function calls the correct linux commands which set the wallpaper
+    :param wallpaper_path: the path to the image
+    :return: 0 if everything went fine
+    """
 
+    # Terminal command to retrieve desktop env name
     system_type_command = 'gsettings list-schemas'
 
+    # Executes the command and saves the output
     out = subprocess.run(system_type_command.split(" "), stdout=subprocess.PIPE)
 
+    # Decodes the output to utf-8
     out = out.stdout.decode('utf-8')
 
+    # Reads the desktop env name
     system_type = "na"
     for line in out.splitlines():
         if "desktop.background" in line:
@@ -29,26 +38,44 @@ def run_linux_commands():
             "Unknown desktop environment '{}'. Compatible envs: ".format(system_type) + "/".join(available_envs)
         )
 
+    # Terminal command to set the background
     set_background_command = 'gsettings set org.' + system_type + '.desktop.background picture-uri FILENAME'
+
+    if not path.isfile(wallpaper_path):
+        raise Exception("{} is not a valid path".format(wallpaper_path))
 
     set_background_command = set_background_command.replace(
         "FILENAME",
-        "/home/andreaalf/Documents/Other/automatic-wallpaper-changer/images/1.png"
+        wallpaper_path
     )
 
+    # Runs the command which changes the desktop wallpaper
     valid = system(set_background_command)
 
+    # If execution failed, raises an exception
     if valid != 0:
         raise Exception("Error while executing command '{}'".format(set_background_command))
 
-    print("VALID:", valid)
+    return int(valid)
 
 
 def get_html_summaries(rss: FeedParserDict) -> list:
+    """
+    Returns the entries formatted as HTML from the rss
+    :param rss: the already parsed rss
+    :return: the list of HTML summaries
+    """
     return [entry["summary"] for entry in rss["entries"]]
 
 
-def get_img_links(rss: FeedParserDict, exclude_galleries=False) -> list:
+def get_img_links(rss: FeedParserDict, exclude_galleries=True) -> list:
+    """
+    This function takes the rss as input and extracts the list of links to the wallpapers
+    :param rss: the already parsed rss in FeedParserDict format
+    :param exclude_galleries: if True, the url to image galleries will not be added to the list
+    :return: the list of valid urls
+    """
+
     html_summaries = get_html_summaries(rss)
 
     url_list = []
@@ -75,7 +102,14 @@ def get_img_links(rss: FeedParserDict, exclude_galleries=False) -> list:
     return url_list
 
 
-def url_to_images(img_links: list, clear_directory=False, exclude_galleries=True):
+def url_to_images(img_links: list, clear_directory=False, exclude_galleries=True) -> None:
+    """
+    This function takes a list of urls which point directly to an image and download it into the 'images' folder
+    :param img_links: the list of urls
+    :param clear_directory: if True, all files in the 'images' folder will be deleted
+    :param exclude_galleries:
+    :return None
+    """
 
     if not path.isdir(IMAGES_DIR):
         mkdir(IMAGES_DIR)
