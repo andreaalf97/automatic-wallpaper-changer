@@ -1,2 +1,5 @@
 images/
 .idea/
+cron.log
+cron_run.sh
+.datetime.txt

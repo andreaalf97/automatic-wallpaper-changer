@@ -102,28 +102,29 @@ def get_img_links(rss: FeedParserDict, exclude_galleries=True) -> list:
     return url_list
 
 
-def url_to_images(img_links: list, clear_directory=False, exclude_galleries=True) -> None:
+def url_to_images(img_links: list, images_dir: str, clear_directory=True) -> None:
     """
     This function takes a list of urls which point directly to an image and download it into the 'images' folder
     :param img_links: the list of urls
     :param clear_directory: if True, all files in the 'images' folder will be deleted
-    :param exclude_galleries:
     :return None
     """
 
-    if not path.isdir(IMAGES_DIR):
-        mkdir(IMAGES_DIR)
+    if not path.isdir(images_dir):
+        mkdir(images_dir)
         print("DIRECTORY CREATED")
 
     if clear_directory:
-        for file in listdir(IMAGES_DIR):
-            if path.isfile(path.join(IMAGES_DIR, file)):
-                remove(path.join(IMAGES_DIR, file))
+        for file in listdir(images_dir):
+            if path.isfile(path.join(images_dir, file)):
+                remove(path.join(images_dir, file))
 
     for i, url in enumerate(img_links, 0):
         img = requests.get(url)
         extension = url.split(".")[-1]
         file_name = str(i) + "." + extension
 
-        with open(path.join(IMAGES_DIR, file_name), "wb") as file:
+        print("RECEIVED {}".format(file_name))
+
+        with open(path.join(images_dir, file_name), "wb") as file:
             file.write(img.content)
