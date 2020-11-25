@@ -1,5 +1,5 @@
 """
-This script will be run every hour.
+This script will be run every 10 minutes.
 First, it checks the time_info.txt file, which contains the name of the current wallpaper
 and the datetime of the last wallpapers refresh
 """
@@ -96,10 +96,7 @@ def set_wallpaper(wallpaper_path: str) -> int:
     system_type_command = 'gsettings list-schemas'
 
     # Executes the command and saves the output
-    out = subprocess.run(system_type_command.split(" "), stdout=subprocess.PIPE)
-
-    # Decodes the output to utf-8
-    out = out.stdout.decode('utf-8')
+    out = subprocess.run(system_type_command.split(" "), stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     # Reads the desktop env name
     system_type = "na"
@@ -119,7 +116,7 @@ def set_wallpaper(wallpaper_path: str) -> int:
         )
 
     # Terminal command to set the background
-    set_background_command = 'gsettings set org.' + system_type + '.desktop.background picture-uri FILENAME'
+    set_background_command = '/usr/bin/gsettings set org.' + system_type + '.desktop.background picture-uri FILENAME'
 
     if not isfile(wallpaper_path):
         raise Exception("{} is not a valid path".format(wallpaper_path))
@@ -128,15 +125,13 @@ def set_wallpaper(wallpaper_path: str) -> int:
         "FILENAME",
         wallpaper_path
     )
+    
+    #print_log("Trying command {}".format(set_background_command))
 
     # Runs the command which changes the desktop wallpaper
-    valid = system(set_background_command)
+    subprocess.Popen(set_background_command, shell=True)
 
-    # If execution failed, raises an exception
-    if valid != 0:
-        raise Exception("Error while executing command '{}'".format(set_background_command))
-
-    return int(valid)
+    return 0
 
 
 def get_html_summaries(rss: FeedParserDict) -> list:
@@ -246,7 +241,7 @@ if __name__ == '__main__':
 
     delta: dt.timedelta = now - environment["LAST_WALLPAPER_UPDATE"]
     # if delta.seconds > 1:  # Update wallpaper if X minutes have passed since last update
-    if delta.seconds > WALLPAPER_UPDATE_RATE_MIN * 60:  # Update wallpaper if X minutes have passed since last update
+    if delta.days > 0 or delta.seconds > WALLPAPER_UPDATE_RATE_MIN * 60:  # Update wallpaper if X minutes have passed since last update
         last_image_index: int = environment["LAST_IMAGE_INDEX"]
 
         new_image_index, path = get_next_image(last_image_index)
