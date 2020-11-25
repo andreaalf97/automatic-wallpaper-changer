@@ -1,7 +1,7 @@
 # automatic-wallpaper-changer
 ### This is a script that automatically changes your desktop background with the latest pictures from the subreddit [r/Wallpaper](https://www.reddit.com/r/Wallpaper/)
 
-This version is able to download and save all the .jpg and .png pictures that are hosted on [Reddit](www.reddit.com) and [Imgur](http://imgur.com/), which are saved in the local folder `images`, <del>but still has problems with those hosted on [Imgur](http://imgur.com/)
+This version is able to download and save all the .jpg and .png pictures that are hosted on [Reddit](www.reddit.com) and [Imgur](http://imgur.com/), which are saved in the local folder `images`.
 
 This guide assumes you have Anaconda or Miniconda. If you don't, make sure your python environment has all the packages listed at [wallpaper.yml](wallpaper.yml)
 
@@ -39,11 +39,9 @@ done
 
 export DBUS_SESSION_BUS_ADDRESS=$(grep -z DBUS_SESSION_BUS_ADDRESS "$fl" | cut -d= -f2-)
 
-#echo "DBUS=$DBUS_SESSION_BUS_ADDRESS"
-
 PATH/TO/anaconda3/bin/conda run -n wallpaper python PATH/TO/automatic-wallpaper-changer/script.py
 ```
-where you have to change the PATH/TO/ parts. Then we make this script executable with
+where you have to change the PATH/TO/ parts. The first part of the script makes sure the `DBUS_SESSION_BUS_ADDRESS` variable is set before executing the Python script. It would not be necessary if `script.pt` is run manually, but we need to manually set it because cron only has access to a restricted subset of the system variables. We then make this script executable with
 ```
 chmod +x ./cron_run.sh
 ```
