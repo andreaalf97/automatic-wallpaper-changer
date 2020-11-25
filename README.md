@@ -21,15 +21,34 @@ You will then need to manually schedule the execution of [script.py](script.py) 
 
 Follow these steps to schedule the execution of the script on your Linux machine.
 
-First we create the executable for your machine and change its permissions:
+First we create the executable for your machine and change its permissions.
+
+Create the file with:
 ```
-echo "conda run -n wallpaper python $PWD/script.py >> $PWD/cron.log 2>&1" > cron_run.sh
+nano cron_run.sh
 ```
+And copy the following code inside
+```
+user=$(whoami)
+
+fl=$(find /proc -maxdepth 2 -user $user -name environ -print -quit)
+while [ -z $(grep -z DBUS_SESSION_BUS_ADDRESS "$fl" | cut -d= -f2- | tr -d '\000' ) ]
+do
+  fl=$(find /proc -maxdepth 2 -user $user -name environ -newer "$fl" -print -quit)
+done
+
+export DBUS_SESSION_BUS_ADDRESS=$(grep -z DBUS_SESSION_BUS_ADDRESS "$fl" | cut -d= -f2-)
+
+#echo "DBUS=$DBUS_SESSION_BUS_ADDRESS"
+
+PATH/TO/anaconda3/bin/conda run -n wallpaper python PATH/TO/automatic-wallpaper-changer/script.py
+```
+where you have to change the PATH/TO/ parts. Then we make this script executable with
 ```
 chmod +x ./cron_run.sh
 ```
 
-Then you need to modify your crontab to execute `cron_run.sh` every 30 minutes.
+Then you need to modify your crontab to execute `cron_run.sh` every 10 minutes.
 
 This can be done by using
 ```
@@ -37,7 +56,10 @@ crontab -e
 ```
 and adding the following line to the crontab file:
 ```
-0,30 0-23 * * * PATH/TO/cron_run.sh
+0-59/10 0-23 * * * /home/andreaalf/Documents/Other/automatic-wallpaper-changer/cron_run.sh >> /home/andreaalf/Documents/Other/automatic-wallpaper-changer/cron.log 2>&1
 ```
+Crontab explanation:
+* `0-59/10` means that the script will be run every 10 minutes
+* `0-23` means every hour of the day
 
 Done. To check if everything is working correctly, you can check the `cron.log` file, where the script outputs its stdout and stderr
